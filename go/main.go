@@ -25,10 +25,10 @@ type ApiResponse struct {
 var db *sql.DB
 
 func initDB() {
-	host   := getEnv("DB_HOST", "localhost")
-	port   := getEnv("DB_PORT", "3306")
-	user   := getEnv("DB_USER", "root")
-	pass   := getEnv("DB_PASS", "")
+	host := getEnv("DB_HOST", "localhost")
+	port := getEnv("DB_PORT", "3306")
+	user := getEnv("DB_USER", "root")
+	pass := getEnv("DB_PASS", "")
 	dbname := getEnv("DB_NAME", "mydb")
 
 	// PlanetScale: tambahkan ?tls=true&interpolateParams=true
@@ -92,7 +92,7 @@ func handleWorkorders(w http.ResponseWriter, r *http.Request) {
 
 	var result []map[string]any
 	for rows.Next() {
-		vals   := make([]any, len(cols))
+		vals := make([]any, len(cols))
 		valPtr := make([]any, len(cols))
 		for i := range vals {
 			valPtr[i] = &vals[i]
@@ -131,7 +131,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /workorders", handleWorkorders)
-	mux.HandleFunc("GET /health",     handleHealth)
+	mux.HandleFunc("GET /health", handleHealth)
 
 	port := getEnv("PORT", "8080")
 	log.Printf("🐹 Go server running on port %s", port)

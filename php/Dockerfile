@@ -1,13 +1,11 @@
-FROM dunglas/frankenphp:latest-php8.3
+FROM php:8.3-cli-alpine
 
 WORKDIR /app
 
-# Install ekstensi PDO MySQL
-RUN install-php-extensions pdo_mysql
+RUN docker-php-ext-install pdo pdo_mysql
 
 COPY index.php .
 
-ENV SERVER_NAME=:8080
 EXPOSE 8080
 
-CMD ["frankenphp", "php-server", "--root", "/app"]
+CMD ["php", "-S", "0.0.0.0:8080", "index.php"]
