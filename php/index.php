@@ -41,8 +41,13 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET' && $uri === '/workorders') {
     try {
+        $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 1000;
+        $limit = max(1, min($limit, 10000)); // min 1, max 10000
+
         $pdo  = getConnection();
-        $stmt = $pdo->query('SELECT * FROM service_workorder');
+        $stmt = $pdo->prepare('SELECT * FROM service_workorder LIMIT :limit');
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
         $data = $stmt->fetchAll();
         jsonResponse(200, 'success', $data);
     } catch (Throwable $e) {

@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -76,7 +77,17 @@ func writeJSON(w http.ResponseWriter, code int, status string, data any) {
 // ─── Handlers ─────────────────────────────────────────────────────────────────
 
 func handleWorkorders(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.QueryContext(r.Context(), "SELECT * FROM service_workorder")
+	limitStr := r.URL.Query().Get("limit")
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = 1000
+	}
+	if limit > 10000 {
+		limit = 10000
+	}
+
+	rows, err := db.QueryContext(r.Context(),
+		"SELECT * FROM service_workorder LIMIT ?", limit)
 	if err != nil {
 		writeJSON(w, 500, "error", err.Error())
 		return

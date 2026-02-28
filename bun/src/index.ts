@@ -34,12 +34,13 @@ const server = Bun.serve({
     const method = req.method;
 
     if (method === "GET" && path === "/workorders") {
-      try {
-        const [rows] = await pool.execute("SELECT * FROM service_workorder");
-        return json({ code: 200, status: "success", data: rows });
-      } catch (err: any) {
-        return json({ code: 500, status: "error", data: err.message }, 500);
-      }
+        try {
+            const limit = Math.min(Math.max(parseInt(url.searchParams.get("limit") ?? "1000"), 1), 10000);
+            const [rows] = await pool.execute("SELECT * FROM service_workorder LIMIT ?", [limit]);
+            return json({ code: 200, status: "success", data: rows });
+        } catch (err: any) {
+            return json({ code: 500, status: "error", data: err.message }, 500);
+        }
     }
 
     if (path === "/health") {
