@@ -1,0 +1,19 @@
+# Environment
+.env
+.env.local
+.env.production
+
+# Bun / Node
+node_modules/
+bun.lockb
+
+# Go binary
+go/server
+*.exe
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

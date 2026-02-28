@@ -1,0 +1,38 @@
+// benchmark.js — jalankan: k6 run --vus 50 --duration 30s benchmark.js
+import http from "k6/http";
+import { check, sleep } from "k6";
+import { Trend, Rate } from "k6/metrics";
+
+const latency = new Trend("request_duration");
+const errorRate = new Rate("errors");
+
+const BASE_URL = __ENV.BASE_URL || "http://localhost:8080";
+
+export const options = {
+  stages: [
+    { duration: "10s", target: 50  }, // ramp up
+    { duration: "30s", target: 50  }, // steady
+    { duration: "10s", target: 100 }, // spike
+    { duration: "30s", target: 100 }, // steady spike
+    { duration: "10s", target: 0   }, // ramp down
+  ],
+  thresholds: {
+    http_req_duration: ["p(95)<500"], // P95 < 500ms
+    errors:            ["rate<0.01"], // error < 1%
+  },
+};
+
+export default function () {
+  const res = http.get(`${BASE_URL}/workorders`);
+
+  const ok = check(res, {
+    "status 200":          (r) => r.status === 200,
+    "has data field":      (r) => JSON.parse(r.body).data !== undefined,
+    "response time < 1s":  (r) => r.timings.duration < 1000,
+  });
+
+  latency.add(res.timings.duration);
+  errorRate.add(!ok);
+
+  sleep(0.1);
+}
