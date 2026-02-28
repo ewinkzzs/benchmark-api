@@ -33,7 +33,7 @@ func initDB() {
 
 	// PlanetScale: tambahkan ?tls=true&interpolateParams=true
 	dsn := fmt.Sprintf(
-		"%s:%s@tcp(%s:%s)/%s?parseTime=true&tls=true&interpolateParams=true",
+		"%s:%s@tcp(%s:%s)/%s?parseTime=true&interpolateParams=true",
 		user, pass, host, port, dbname,
 	)
 
