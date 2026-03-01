@@ -17,3 +17,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+note
+k6/result
