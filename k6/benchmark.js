@@ -24,11 +24,21 @@ export const options = {
 };
 
 export default function () {
-  const res = http.get(`${BASE_URL}/workorders?limit=${LIMIT}`);
+  const res = http.get(`${BASE_URL}/workorders?limit=${LIMIT}`, {
+    timeout: "120s", // ← tambahkan timeout yang lebih panjang
+  });
 
   const ok = check(res, {
     "status 200":         (r) => r.status === 200,
-    "has data field":     (r) => JSON.parse(r.body).data !== undefined,
+    "has data field":     (r) => {
+      // ✅ Cek body tidak kosong dulu sebelum parse
+      if (!r.body || r.status !== 200) return false;
+      try {
+        return JSON.parse(r.body).data !== undefined;
+      } catch (e) {
+        return false;
+      }
+    },
     "response time < 1s": (r) => r.timings.duration < 1000,
   });
 
