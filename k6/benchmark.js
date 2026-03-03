@@ -1,5 +1,5 @@
 import http from "k6/http";
-import { check } from "k6";
+import { check, sleep } from "k6";
 import { Trend, Rate } from "k6/metrics";
 
 const latency   = new Trend("request_duration");
@@ -10,17 +10,17 @@ const LIMIT    = __ENV.LIMIT    || "1000";
 
 export const options = {
   stages: [
-    { duration: "30s",  target: 50  }, // ramp up
-    { duration: "60s",  target: 100 }, // steady medium
-    { duration: "30s",  target: 200 }, // ramp up aggressive
-    { duration: "120s", target: 200 }, // ← sustained high load (2 menit penuh)
-    { duration: "30s",  target: 300 }, // spike ekstrem
-    { duration: "60s",  target: 300 }, // sustained spike
-    { duration: "30s",  target: 0   }, // ramp down
+    { duration: "30s", target: 10 }, // ramp up pelan
+    { duration: "60s", target: 20 }, // steady ringan
+    { duration: "30s", target: 35 }, // naik sedang
+    { duration: "60s", target: 35 }, // steady sedang
+    { duration: "30s", target: 50 }, // puncak
+    { duration: "60s", target: 50 }, // sustained peak
+    { duration: "30s", target: 0  }, // ramp down
   ],
   thresholds: {
-    http_req_duration: ["p(95)<30000"], // longgarkan threshold
-    errors:            ["rate<0.5"],    // toleransi error lebih tinggi
+    http_req_duration: ["p(95)<30000"],
+    errors:            ["rate<0.5"],
   },
 };
 
@@ -46,5 +46,5 @@ export default function () {
   latency.add(res.timings.duration);
   errorRate.add(!ok);
 
-  // ✅ Hilangkan sleep() — request terus tanpa jeda
+  sleep(1); // ✅ jeda 1s antar request
 }
