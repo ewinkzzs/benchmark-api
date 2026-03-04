@@ -12,10 +12,10 @@ export const options = {
   stages: [
     { duration: "30s",  target: 50  }, // ramp up
     { duration: "60s",  target: 100 }, // steady ringan
-    { duration: "30s",  target: 150 }, // naik sedang
-    { duration: "120s", target: 150 }, // sustained sedang (2 menit)
-    { duration: "30s",  target: 200 }, // naik ke puncak
-    { duration: "120s", target: 200 }, // sustained peak (2 menit)
+    { duration: "30s",  target: 160 }, // naik sedang
+    { duration: "120s", target: 200 }, // sustained sedang (2 menit)
+    { duration: "30s",  target: 250 }, // naik ke puncak
+    { duration: "120s", target: 250 }, // sustained peak (2 menit)
     { duration: "30s",  target: 0   }, // ramp down
   ],
   thresholds: {
