@@ -10,13 +10,13 @@ const LIMIT    = __ENV.LIMIT    || "1000";
 
 export const options = {
   stages: [
-    { duration: "30s", target: 10 }, // ramp up pelan
-    { duration: "60s", target: 20 }, // steady ringan
-    { duration: "30s", target: 35 }, // naik sedang
-    { duration: "60s", target: 35 }, // steady sedang
-    { duration: "30s", target: 50 }, // puncak
-    { duration: "60s", target: 50 }, // sustained peak
-    { duration: "30s", target: 0  }, // ramp down
+    { duration: "30s", target: 20  }, // ramp up pelan
+    { duration: "60s", target: 40  }, // steady ringan
+    { duration: "30s", target: 60  }, // naik sedang
+    { duration: "90s", target: 60  }, // sustained sedang (1.5 menit)
+    { duration: "30s", target: 100 }, // naik ke puncak
+    { duration: "90s", target: 100 }, // sustained peak (1.5 menit) ← kunci
+    { duration: "30s", target: 0   }, // ramp down
   ],
   thresholds: {
     http_req_duration: ["p(95)<30000"],
@@ -46,5 +46,5 @@ export default function () {
   latency.add(res.timings.duration);
   errorRate.add(!ok);
 
-  sleep(1); // ✅ jeda 1s antar request
+  sleep(0.5); // ✅ jeda 0.5s antar request
 }
