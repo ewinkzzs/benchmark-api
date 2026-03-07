@@ -1,5 +1,5 @@
 import http from "k6/http";
-import { check, sleep } from "k6";
+import { check } from "k6";
 import { Trend, Rate } from "k6/metrics";
 
 const latency   = new Trend("request_duration");
@@ -9,14 +9,21 @@ const BASE_URL = __ENV.BASE_URL || "http://localhost:8080";
 const LIMIT    = __ENV.LIMIT    || "1000";
 
 export const options = {
+  // ✅ Matikan verbose logging
+  noConnectionReuse: false,
+  discardResponseBodies: false,
+
+  // ✅ Batasi log error agar tidak flood
+  summaryTrendStats: ["avg", "min", "med", "max", "p(90)", "p(95)", "p(99)"],
+
   stages: [
-    { duration: "30s",  target: 50  }, // ramp up
-    { duration: "60s",  target: 100 }, // steady ringan
-    { duration: "30s",  target: 160 }, // naik sedang
-    { duration: "60s",  target: 160 }, // steady sedang ← tambahkan ini
-    { duration: "30s",  target: 250 }, // naik ke puncak
-    { duration: "120s", target: 250 }, // sustained peak (2 menit)
-    { duration: "30s",  target: 0   }, // ramp down
+    { duration: "30s",  target: 50  },
+    { duration: "60s",  target: 100 },
+    { duration: "30s",  target: 160 },
+    { duration: "60s",  target: 160 },
+    { duration: "30s",  target: 250 },
+    { duration: "120s", target: 250 },
+    { duration: "30s",  target: 0   },
   ],
   thresholds: {
     http_req_duration: ["p(95)<30000"],
@@ -45,5 +52,4 @@ export default function () {
 
   latency.add(res.timings.duration);
   errorRate.add(!ok);
-
 }
