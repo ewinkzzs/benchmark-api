@@ -4,7 +4,6 @@
     "builder": "DOCKERFILE"
   },
   "deploy": {
-    "startCommand": "k6 run -e BASE_URL=$BASE_URL -e LIMIT=$LIMIT /scripts/benchmark.js",
     "restartPolicyType": "NEVER"
   }
 }
