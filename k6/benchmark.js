@@ -1,5 +1,5 @@
 import http from "k6/http";
-import { check } from "k6";
+import { check, sleep } from "k6";
 import { Trend, Rate } from "k6/metrics";
 
 const latency   = new Trend("request_duration");
@@ -9,31 +9,25 @@ const BASE_URL = __ENV.BASE_URL || "http://localhost:8080";
 const LIMIT    = __ENV.LIMIT    || "1000";
 
 export const options = {
-  // ✅ Matikan verbose logging
-  noConnectionReuse: false,
-  discardResponseBodies: false,
-
-  // ✅ Batasi log error agar tidak flood
   summaryTrendStats: ["avg", "min", "med", "max", "p(90)", "p(95)", "p(99)"],
-
   stages: [
-    { duration: "30s",  target: 50  },
-    { duration: "60s",  target: 100 },
-    { duration: "30s",  target: 160 },
-    { duration: "60s",  target: 160 },
-    { duration: "30s",  target: 250 },
-    { duration: "120s", target: 250 },
-    { duration: "30s",  target: 0   },
+    { duration: "30s",  target: 5  }, // ramp up pelan
+    { duration: "60s",  target: 10 }, // steady ringan
+    { duration: "30s",  target: 20 }, // naik sedang
+    { duration: "60s",  target: 20 }, // sustained sedang
+    { duration: "30s",  target: 30 }, // naik ke puncak
+    { duration: "120s", target: 30 }, // sustained peak
+    { duration: "30s",  target: 0  }, // ramp down
   ],
   thresholds: {
-    http_req_duration: ["p(95)<30000"],
-    errors:            ["rate<0.5"],
+    http_req_duration: ["p(95)<10000"], // lebih ketat karena internal
+    errors:            ["rate<0.3"],
   },
 };
 
 export default function () {
   const res = http.get(`${BASE_URL}/workorders?limit=${LIMIT}`, {
-    timeout: "120s",
+    timeout: "30s", // lebih pendek karena internal cepat
     headers: { "Connection": "keep-alive" },
   });
 
@@ -47,9 +41,11 @@ export default function () {
         return false;
       }
     },
-    "response time < 5s": (r) => r.timings.duration < 5000,
+    "response time < 3s": (r) => r.timings.duration < 3000,
   });
 
   latency.add(res.timings.duration);
   errorRate.add(!ok);
+
+  sleep(1); // ✅ wajib untuk internal network
 }
