@@ -27,6 +27,7 @@ function json<T>(data: ApiResponse<T>, status = 200): Response {
 
 const server = Bun.serve({
   port: Number(Bun.env.PORT ?? 8080),
+  idleTimeout: 120,
 
   async fetch(req) {
     const url    = new URL(req.url);
