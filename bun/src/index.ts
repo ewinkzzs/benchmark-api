@@ -78,16 +78,6 @@ const server = Bun.serve({
             service_workorder.CurrentStall, 
             service_workorder.ServiceAdvisor, 
             service_workorder.Foreman, 
-            service_workorder.RepairType, 
-            service_workorder.ServiceInvoice, 
-            service_workorder.InvoiceDate, 
-            service_workorder.StartOn, 
-            service_workorder.IsApproved, 
-            service_workorder.WaitingApproval, 
-            service_workorder.BookingNumberMToyota, 
-            service_workorder.ErrorCode, 
-            service_workorder.ClaimNo, 
-            service_workorder.TWCNumber, 
             service_workorder.Message,
             service_workorder.created_at
           FROM service_workorder LIMIT ${limit}`
