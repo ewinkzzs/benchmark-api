@@ -1,15 +1,15 @@
 import mysql from "mysql2/promise";
 
 const pool = mysql.createPool({
-  host:               Bun.env.DB_HOST     ?? "localhost",
+  host:               Bun.env.DB_HOST ?? "localhost",
   port:               Number(Bun.env.DB_PORT ?? 3306),
-  user:               Bun.env.DB_USER     ?? "root",
-  password:           Bun.env.DB_PASS     ?? "",
-  database:           Bun.env.DB_NAME     ?? "mydb",
+  user:               Bun.env.DB_USER ?? "root",
+  password:           Bun.env.DB_PASS ?? "",
+  database:           Bun.env.DB_NAME ?? "mydb",
   waitForConnections: true,
-  connectionLimit:    20,
+  connectionLimit:    25,        // sama dengan Go (MaxOpenConns: 25)
   queueLimit:         0,
-  ssl:                { rejectUnauthorized: false }, // PlanetScale wajib SSL
+  ssl:                { rejectUnauthorized: false },
 });
 
 type ApiResponse<T> = {
@@ -18,73 +18,89 @@ type ApiResponse<T> = {
   data:   T;
 };
 
+// ✅ Pakai Buffer — 1x alokasi saja, setara Go & PHP
 function json<T>(data: ApiResponse<T>, status = 200): Response {
-  return new Response(JSON.stringify(data), {
+  const buf = Buffer.from(JSON.stringify(data));
+  return new Response(buf, {
     status,
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type":  "application/json",
+      "Content-Length": String(buf.byteLength),
+    },
   });
 }
 
 const server = Bun.serve({
-  port: Number(Bun.env.PORT ?? 8080),
+  port:        Number(Bun.env.PORT ?? 8080),
+  idleTimeout: 120,
 
   async fetch(req) {
     const url    = new URL(req.url);
     const path   = url.pathname;
     const method = req.method;
 
+    // ─── GET /workorders ────────────────────────────────────────────────────
     if (method === "GET" && path === "/workorders") {
-        try {
-            const limit = Math.min(Math.max(parseInt(url.searchParams.get("limit") ?? "1000"), 1), 10000);
-            const [rows] = await pool.execute(`SELECT
-                                                service_workorder.Oid, 
-                                                service_workorder.WorkOrderNo, 
-                                                service_workorder.WorkOrderDate, 
-                                                service_workorder.CancelDate, 
-                                                service_workorder.BookingNo, 
-                                                service_workorder.BookingStartOn, 
-                                                service_workorder.BookingDate, 
-                                                service_workorder.ProspectCategory, 
-                                                service_workorder.CustomerType, 
-                                                service_workorder.ServiceStartOn, 
-                                                service_workorder.ServiceEndOn, 
-                                                service_workorder.Remark, 
-                                                service_workorder.BookingStatus, 
-                                                service_workorder.WorkOrderStatus,
-                                                service_workorder.TotalJobDiscount, 
-                                                service_workorder.TotalJobProgram, 
-                                                service_workorder.TotalJobVAT, 
-                                                service_workorder.TotalJobWithholdingTax, 
-                                                service_workorder.TotalJob, 
-                                                service_workorder.PDI, 
-                                                service_workorder.IRC, 
-                                                service_workorder.JobTWC, 
-                                                service_workorder.OTH, 
-                                                service_workorder.RTJ, 
-                                                service_workorder.VehicleUnit, 
-                                                service_workorder.CurrentStall, 
-                                                service_workorder.ServiceAdvisor, 
-                                                service_workorder.Foreman, 
-                                                service_workorder.RepairType, 
-                                                service_workorder.ServiceInvoice, 
-                                                service_workorder.InvoiceDate, 
-                                                service_workorder.StartOn, 
-                                                service_workorder.IsApproved, 
-                                                service_workorder.WaitingApproval, 
-                                                service_workorder.BookingNumberMToyota, 
-                                                service_workorder.ErrorCode, 
-                                                service_workorder.ClaimNo, 
-                                                service_workorder.TWCNumber, 
-                                                service_workorder.Message,
-                                                service_workorder.created_at
-                                              FROM
-                                                service_workorder LIMIT ${limit}`);
-            return json({ code: 200, status: "success", data: rows });
-        } catch (err: any) {
-            return json({ code: 500, status: "error", data: err.message }, 500);
-        }
+      try {
+        const limit = Math.min(
+          Math.max(parseInt(url.searchParams.get("limit") ?? "1000"), 1),
+          10000
+        );
+
+        // ✅ Query identik dengan Go & PHP
+        const [rows] = await pool.query(
+          `SELECT
+            service_workorder.Oid, 
+            service_workorder.WorkOrderNo, 
+            service_workorder.WorkOrderDate, 
+            service_workorder.CancelDate, 
+            service_workorder.BookingNo, 
+            service_workorder.BookingStartOn, 
+            service_workorder.BookingDate, 
+            service_workorder.ProspectCategory, 
+            service_workorder.CustomerType, 
+            service_workorder.ServiceStartOn, 
+            service_workorder.ServiceEndOn, 
+            service_workorder.Remark, 
+            service_workorder.BookingStatus, 
+            service_workorder.WorkOrderStatus,
+            service_workorder.TotalJobDiscount, 
+            service_workorder.TotalJobProgram, 
+            service_workorder.TotalJobVAT, 
+            service_workorder.TotalJobWithholdingTax, 
+            service_workorder.TotalJob, 
+            service_workorder.PDI, 
+            service_workorder.IRC, 
+            service_workorder.JobTWC, 
+            service_workorder.OTH, 
+            service_workorder.RTJ, 
+            service_workorder.VehicleUnit, 
+            service_workorder.CurrentStall, 
+            service_workorder.ServiceAdvisor, 
+            service_workorder.Foreman, 
+            service_workorder.RepairType, 
+            service_workorder.ServiceInvoice, 
+            service_workorder.InvoiceDate, 
+            service_workorder.StartOn, 
+            service_workorder.IsApproved, 
+            service_workorder.WaitingApproval, 
+            service_workorder.BookingNumberMToyota, 
+            service_workorder.ErrorCode, 
+            service_workorder.ClaimNo, 
+            service_workorder.TWCNumber, 
+            service_workorder.Message,
+            service_workorder.created_at
+          FROM service_workorder LIMIT ${limit}`
+        );
+
+        return json({ code: 200, status: "success", data: rows });
+
+      } catch (err: any) {
+        return json({ code: 500, status: "error", data: err.message }, 500);
+      }
     }
 
+    // ─── GET /health ─────────────────────────────────────────────────────────
     if (path === "/health") {
       return json({ code: 200, status: "success", data: { status: "ok" } });
     }
