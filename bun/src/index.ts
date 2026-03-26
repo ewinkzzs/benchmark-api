@@ -69,22 +69,7 @@ const server = Bun.serve({
             service_workorder.TotalJobVAT, 
             service_workorder.TotalJobWithholdingTax, 
             service_workorder.TotalJob, 
-            service_workorder.PDI, 
-            service_workorder.IRC, 
-            service_workorder.JobTWC, 
-            service_workorder.OTH, 
-            service_workorder.RTJ, 
-            service_workorder.VehicleUnit, 
-            service_workorder.CurrentStall, 
-            service_workorder.ServiceAdvisor, 
-            service_workorder.Foreman, 
-            service_workorder.RepairType, 
-            service_workorder.ServiceInvoice, 
-            service_workorder.InvoiceDate, 
-            service_workorder.StartOn, 
-            service_workorder.IsApproved, 
-            service_workorder.WaitingApproval, 
-            service_workorder.BookingNumberMToyota
+            service_workorder.PDI
           FROM service_workorder LIMIT ${limit}`
         );
 
