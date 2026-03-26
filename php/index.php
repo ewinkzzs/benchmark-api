@@ -80,12 +80,7 @@ if ($method === 'GET' && $uri === '/workorders') {
                                 service_workorder.StartOn, 
                                 service_workorder.IsApproved, 
                                 service_workorder.WaitingApproval, 
-                                service_workorder.BookingNumberMToyota, 
-                                service_workorder.ErrorCode, 
-                                service_workorder.ClaimNo, 
-                                service_workorder.TWCNumber, 
-                                service_workorder.Message,
-                                service_workorder.created_at
+                                service_workorder.BookingNumberMToyota
                             FROM
                                 service_workorder LIMIT :limit');
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
